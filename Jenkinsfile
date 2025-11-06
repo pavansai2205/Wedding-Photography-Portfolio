@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = 'pavansai2205/portfolio_docker-frontend:latest'
+        IMAGE_NAME = 'pavansai2205/reactjs_portfolio:latest'
     }
 
     stages {
@@ -12,38 +12,7 @@ pipeline {
             }
         }
 
-        stage('Build Docker Images') {
-            steps {
-        withCredentials([usernamePassword(
-            credentialsId: 'dockerhub-credentials',
-            usernameVariable: 'DOCKER_USER',
-            passwordVariable: 'DOCKER_PASS'
-        )]) {
-            script {
-                sh """
-                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                    docker build -t portfolio_docker-frontend .
-                    docker logout
-                """
-            }
-        }
-        }
-        }
-
-        stage('Start Containers') {
-            steps {
-                sh 'docker-compose up -d'
-            }
-        }
-
-        stage('Test Containers') {
-            steps {
-                sh 'docker ps'
-                sh 'docker-compose logs frontend'
-            }
-        }
-
-        stage('Push to Docker Hub') {
+        stage('Build & Push Docker Image') {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub-credentials',
@@ -51,18 +20,36 @@ pipeline {
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
                     script {
-                        def imageName = "pavansai2205/reactjs_portfolio:latest" // or use "reactjs_portfolio:${env.BUILD_NUMBER}"
-                        sh """
+                        sh '''
                             echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                            docker tag portfolio_docker-frontend:latest ${imageName}
-                            docker push ${imageName}
+                            docker build -t portfolio_docker-frontend .
+                            docker tag portfolio_docker-frontend:latest $IMAGE_NAME
+                            docker push $IMAGE_NAME
                             docker logout
-                        """
+                        '''
                     }
+                }
+            }
+        }
+
+        stage('Deploy with Ansible') {
+            steps {
+                sshagent (credentials: ['ec2-ssh-deployer']) {
+                    sh '''
+                        echo "Deploying Docker container using Ansible..."
+                        ansible-playbook -i /var/lib/jenkins/ansible/inventory.ini /var/lib/jenkins/ansible/deploy.yml -vv
+                    '''
                 }
             }
         }
     }
 
-   
+    post {
+        success {
+            echo 'Deployment Successful!'
+        }
+        failure {
+            echo 'Deployment Failed.'
+        }
+    }
 }
