@@ -30,26 +30,6 @@ pipeline {
                     }
                 }
             }
-        }
-
-        stage('Deploy with Ansible') {
-            steps {
-                sshagent (credentials: ['ec2-ssh-deployer']) {
-                    sh '''
-                        echo "Deploying Docker container using Ansible..."
-                        ansible-playbook -i /var/lib/jenkins/ansible/inventory.ini /var/lib/jenkins/ansible/deploy.yml -vv
-                    '''
-                }
-            }
-        }
-    }
-
-    post {
-        success {
-            echo 'Deployment Successful!'
-        }
-        failure {
-            echo 'Deployment Failed.'
-        }
+        }  
     }
 }

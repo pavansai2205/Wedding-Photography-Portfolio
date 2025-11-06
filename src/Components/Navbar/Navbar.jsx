@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
-import { NavbarItems } from '../NavbarData';
-import '../../Components/Styles/navbar.scss';
+import React, { useState } from "react";
+import { NavLink } from "react-router-dom";
+import { NavbarItems } from "../NavbarData";
+import "../../Components/Styles/navbar.scss";
 
 function Navbar() {
   const [state, setState] = useState(false);
@@ -10,27 +10,25 @@ function Navbar() {
   };
 
   return (
-    <div className={state ? 'navbar active' : 'navbar'}>
+    <div className={state ? "navbar active" : "navbar"}>
       {/* For Mobile Devices */}
       <div
-        className={state ? 'menu-open active' : 'menu-open'}
-        onClick={handleClick}
-      >
+        className={state ? "menu-open active" : "menu-open"}
+        onClick={handleClick}>
         <div className="menu-line menu-line-1"></div>
         <div className="menu-line menu-line-2"></div>
         <div className="menu-line menu-line-3"></div>
       </div>
-      <h1>Ramu Studio</h1>
+      <h1>Pavan's Studio</h1>
       <ul>
         {NavbarItems.map((item, index) => {
           return (
             <li key={index}>
               <NavLink
                 className={({ isActive }) =>
-                  isActive ? item.cName + ' active' : item.cName
+                  isActive ? item.cName + " active" : item.cName
                 }
-                to={item.url}
-              >
+                to={item.url}>
                 <i className={item.icon}></i>
                 {item.title}
               </NavLink>
